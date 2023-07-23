@@ -1,0 +1,135 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+  }
+  #chatContainer {
+    max-width: 99%;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  #chatHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  #userIcon,
+  #roomIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e6e6e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #fff;
+  }
+  
+  #userIcon {
+    background-color: #02006e; /* Blue background for the user icon */
+  }
+  
+  #roomIcon {
+    background-color: #ff9900; /* Orange background for the room icon */
+  }
+  
+  #messages {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    overflow-y: auto;
+    max-height: 90%;
+  }
+  
+  .message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 70%;
+    border-radius: 10px;
+    padding: 10px;
+    word-break: break-word !important; /* Add !important to override any conflicting styles */
+  }
+  
+  .message.sent {
+    align-self: flex-end;
+    background-color: #111111;
+    color: #fff;
+  }
+  
+  .message.received {
+    align-self: flex-start;
+    background-color: #111111;
+  }
+  
+  .messageContent {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .username {
+    font-weight: bold;
+  }
+  
+  .text {
+    word-wrap: break-word;
+  }
+  
+  .timestamp {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .send-message-container {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 90%;
+    background-color: #010101;
+  }
+  
+  .send-message-container input[type="text"] {
+    flex: 1;
+    padding: 0.6em 1em;
+    border: none;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .send-message-container button {
+    padding: 0.6em 1em;
+    background-color: #000a9b;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .send-message-container button[disabled] {
+    background-color: #010101;
+    cursor: not-allowed;
+  }
+  
+/* Hide the scrollbar for webkit-based browsers */
+#messages::-webkit-scrollbar {
+    display: none;
+  }
