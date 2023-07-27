@@ -111,8 +111,22 @@ function handleContextMenu(event, messageKey, messageUsername, messagesRef) {
 }
 
   function scrollChatToBottom() {
-    document.getElementsByTagName('body').scrollBottom = document.getElementsByTagName('body').scrollHeight;
-  }
+      // Get the height of the entire document
+      const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      
+      // Calculate the viewport height
+      const viewportHeight = window.innerHeight;
+      
+      // Calculate the final scroll position to reach the bottom of the page
+      const scrollPosition = docHeight - viewportHeight;
+      
+      // Scroll to the bottom
+      window.scrollTo({
+        top: scrollPosition,
+        behavior: 'smooth' // This makes the scroll smooth, set it to 'auto' for instant scroll
+      });
+    }
+
   // Function to handle the deletion of a message
   function handleDeleteMessage(messageDiv) {
     Swal.fire({
