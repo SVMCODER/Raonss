@@ -120,6 +120,30 @@ function handleLongPress(event, messageDiv, messageKey, messageUsername, message
   event.preventDefault();
   let longPressTimer;
 
+function scrollChatToBottom()
+{
+    var height = document.body.scrollHeight;
+    window.scroll(0 , height);
+}
+  
+  // Function to handle the deletion of a message
+  function handleDeleteMessage(messageDiv) {
+    Swal.fire({
+      title: 'Delete Message?',
+      text: 'Are you sure you want to delete this message?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        messageDiv.remove();
+      }
+    });
+  }
+
   // Start the long-press timer
   longPressTimer = setTimeout(() => {
     handleContextMenu(event, messageDiv, messageKey, messageUsername, messagesRef);
