@@ -127,9 +127,50 @@ function incrementViewsOnClick(blogId) {
   });
 }
 
+// Function to send a like message
+function sendLikeMessage(blogId, blogData) {
+  var user = firebase.auth().currentUser;
+  if (!user) {
+    console.log('User is not logged in');
+    return;
+  }
+
+  var currentUserUid = user.uid;
+  var authorUid = blogData.uid;
+  var authorName = blogData.authorName;
+
+  // Check if the current user is not the author of the blog post
+  if (currentUserUid !== authorUid) {
+    var likeMessage = `${user.displayName} liked your post.`;
+
+    // Create a new message reference in the database
+    var messagesRef = database.ref('messages');
+    var newMessageRef = messagesRef.push();
+
+    // Set the message data
+    var messageData = {
+      senderUid: currentUserUid,
+      recipientUid: authorUid,
+      message: likeMessage,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    // Save the message data to the database
+    newMessageRef.set(messageData)
+      .then(function () {
+        console.log('Like message sent successfully.');
+      })
+      .catch(function (error) {
+        console.error('Error sending like message:', error);
+      });
+  }
+}
+
 // Function to handle the like functionality of a blog post
-function handleLike(blogId) {
+function handleLike(blogId, blogDataString) {
   var userId = firebase.auth().currentUser.uid;
+
+  var blogData = JSON.parse(blogDataString.replace(/\\'/g, "'"));
 
   var blogRef = blogsRef.child(blogId);
 
@@ -145,11 +186,15 @@ function handleLike(blogId) {
       } else {
         // User hasn't liked the post, so add the like
         blog.likes[userId] = true;
+
+        // Send a like message to the blog author
+        sendLikeMessage(blogId, blogData);
       }
     }
     return blog;
   });
 }
+
 
 function displayBlogs() {
   var blogContainer = document.getElementById('blogContainer');
@@ -195,15 +240,13 @@ function displayBlogs() {
           event.stopPropagation();
           window.location.href = '/profile.html?uid=' + authorId;
         });
-        blogHeader.appendChild(authorIconContainer);
+        
+        // Display the author's name in the blog header
+        var authorNameHeader = document.createElement('h3');
+        authorNameHeader.textContent = "Author: " + blogData.authorName;
+        blogHeader.appendChild(authorNameHeader);
 
-        var authorInfo = document.createElement('div');
-        authorInfo.classList.add('author-info');
-        var authorName = document.createElement('h3');
-        authorName.textContent = blogData.authorName;
-        var timestamp = document.createElement('p');
-        timestamp.classList.add('timestamp');
-        timestamp.textContent = formatDate(blogData.timestamp);
+        blogHeader.appendChild(authorIconContainer);
 
         // Add the delete option (trash icon) for the author
         if (isCurrentUserAuthor(blogData)) {
@@ -213,12 +256,14 @@ function displayBlogs() {
             event.stopPropagation();
             deletePost(blogId);
           });
-          authorInfo.appendChild(deleteIcon);
+          blogHeader.appendChild(deleteIcon);
         }
 
-        authorInfo.appendChild(authorName);
-        authorInfo.appendChild(timestamp);
-        blogHeader.appendChild(authorInfo);
+        var timestamp = document.createElement('p');
+        timestamp.classList.add('timestamp');
+        timestamp.textContent = formatDate(blogData.timestamp);
+
+        authorNameHeader.appendChild(timestamp);
         blogElement.appendChild(blogHeader);
 
         var blogContent = document.createElement('div');
@@ -266,7 +311,8 @@ function displayBlogs() {
 
         var likeIcon = document.createElement('i');
         likeIcon.id = 'likeIcon_' + blogId;
-        likeIcon.classList.add('fas', 'fa-thumbs-up');
+        likeIcon.classList.add('fas', 'fa-heart');
+        likeIcon.setAttribute('onclick', `handleLike('${blogId}', '${JSON.stringify(blogData).replace(/'/g, "\\'")}')`);
         likeContainer.appendChild(likeIcon);
 
         var likesCount = document.createElement('span');
@@ -330,3 +376,37 @@ function formatDate(date) {
 
 // Call the displayBlogs function to initialize the blog display
 displayBlogs();
+// Updated logout function with confirmation
+function logout() {
+  Swal.fire({
+    title: 'Logout',
+    text: 'Are you sure you want to log out?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, Log out',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      firebase.auth().signOut()
+        .then(() => {
+          console.log("User logged out");
+          Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: "User logged out successfully!"
+          });
+          window.location.href = "login.html"; // Redirect the user to the login page after logout
+        })
+        .catch((error) => {
+          console.error("Logout error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Logout Error",
+            text: "An error occurred while logging out."
+          });
+        });
+    }
+  });
+}

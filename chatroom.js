@@ -1,16 +1,13 @@
 var firebaseConfig = {
-    apiKey: "AIzaSyCOA_2bf_b1o1nXSHZO5Re5DjSD66Pa6MY",
-    authDomain: "https://raona0-default-rtdb.firebaseio.com",
-    projectId: "raona0",
-    storageBucket: "raona0.appspot.com",
-    messagingSenderId: "797719983777",
-    appId: "1:797719983777:web:d7ffca1316891b51ec62e0"
-  };
-// chatroom.js
-
+  apiKey: "AIzaSyCOA_2bf_b1o1nXSHZO5Re5DjSD66Pa6MY",
+  authDomain: "https://raona0-default-rtdb.firebaseio.com",
+  projectId: "raona0",
+  storageBucket: "raona0.appspot.com",
+  messagingSenderId: "797719983777",
+  appId: "1:797719983777:web:d7ffca1316891b51ec62e0"
+};
 // Initialize Firebase (Replace these credentials with your own)
 firebase.initializeApp(firebaseConfig);
-// chatroom.js
 
 // Function to format the timestamp into a relative time difference
 function formatTimestamp(timestamp) {
@@ -70,8 +67,16 @@ firebase.auth().onAuthStateChanged((user) => {
     document.getElementById('userIcon').textContent = user.displayName ? user.displayName[0] : 'A';
   }
 });
-// Function to handle the context menu (pop-up) on long-press for message deletion
-function handleContextMenu(event, messageKey, messageUsername, messagesRef) {
+
+
+function scrollChatToBottom() {
+  var height = document.body.scrollHeight;
+  window.scroll(0, height);
+}
+
+
+// Function to handle the context menu (pop-up) for message deletion
+function handleContextMenu(event, messageDiv, messageKey, messageUsername, messagesRef) {
   event.preventDefault();
 
   // Check if the current user is the sender of the message
@@ -110,42 +115,44 @@ function handleContextMenu(event, messageKey, messageUsername, messagesRef) {
   }
 }
 
-  function scrollChatToBottom() {
-    document.getElementsByTagName('body').scrollBottom = document.getElementsByTagName('body').scrollHeight;
-  }
-  // Function to handle the deletion of a message
-  function handleDeleteMessage(messageDiv) {
-    Swal.fire({
-      title: 'Delete Message?',
-      text: 'Are you sure you want to delete this message?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Delete',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        messageDiv.remove();
-      }
-    });
-  }
+// Function to handle the long-press event for messages
+function handleLongPress(event, messageDiv, messageKey, messageUsername, messagesRef) {
+  event.preventDefault();
+  let longPressTimer;
 
-  // Initialize long-press event for each message
-  const allMessages = document.querySelectorAll('.message');
-  allMessages.forEach((messageDiv) => {
-    handleLongPress(messageDiv);
+  // Start the long-press timer
+  longPressTimer = setTimeout(() => {
+    handleContextMenu(event, messageDiv, messageKey, messageUsername, messagesRef);
+  }, 500); // Set the threshold for long-press (in milliseconds)
 
-    // Add click event listener to the trash icon
-    const trashIcon = messageDiv.querySelector('.trash-icon');
-    trashIcon.addEventListener('click', (event) => {
-      event.stopPropagation(); // Prevent the click event from bubbling up to the message div
-      handleDeleteMessage(messageDiv);
-    });
+  // Clear the long-press timer when the touch/click event ends
+  messageDiv.addEventListener('touchend', clearLongPressTimer);
+  messageDiv.addEventListener('mouseup', clearLongPressTimer);
+
+  // Function to clear the long-press timer
+  function clearLongPressTimer() {
+    clearTimeout(longPressTimer);
+  }
+}
+
+// Add long-press event listeners to each message for showing the delete option
+function initMessageLongPress(messageDiv, messageKey, messageUsername, messagesRef) {
+  messageDiv.addEventListener('touchstart', (event) => {
+    handleLongPress(event, messageDiv, messageKey, messageUsername, messagesRef);
   });
+  messageDiv.addEventListener('mousedown', (event) => {
+    handleLongPress(event, messageDiv, messageKey, messageUsername, messagesRef);
+  });
+}
+
+
+
+
 if (!roomId) {
   messagesDiv.innerHTML = '<p>No chatroom found. Please create or join a chatroom.</p>';
-} else {
+}
+
+else {
   const chatroomRef = firebase.database().ref('chatrooms/' + roomId);
   const messagesRef = chatroomRef.child('messages');
 
@@ -157,79 +164,80 @@ if (!roomId) {
     .catch((error) => {
       console.error('Error fetching chatroom:', error);
     });
-
-    function refreshChat() {
-      // Clear existing messages
-      messagesDiv.innerHTML = '';
-    
-      // Fetch all messages again and populate the chat
-      messagesRef.once('value', (snapshot) => {
-        const messages = [];
-    
-        snapshot.forEach((childSnapshot) => {
-          const message = childSnapshot.val();
-          messages.push({
-            key: childSnapshot.key,
-            username: message.username,
-            timestamp: message.timestamp,
-            text: message.text,
-            formattedTimestamp: formatTimestamp(message.timestamp)
-          });
-        });
-    
-        // Sort the messages based on their timestamps in ascending order (oldest to newest)
-        messages.sort((a, b) => a.timestamp - b.timestamp);
-    
-        // Generate message HTML
-        let chatHTML = '';
-        messages.forEach((message) => {
-          const messageDiv = document.createElement('div');
-          messageDiv.classList.add('message');
-          messageDiv.classList.add(message.username === username ? 'sent' : 'received');
-    
-          // Set a data attribute to identify the message div with its key
-          messageDiv.setAttribute('data-message-key', message.key);
-    
-          // Create the message content
-          const messageContentDiv = document.createElement('div');
-          messageContentDiv.classList.add('messageContent');
-          messageContentDiv.innerHTML = `
-            <div class="messageHeader">
-              <span class="username">${message.username}</span>
-              <span class="timestamp">${message.formattedTimestamp}</span>
-            </div>
-            <div class="text">${message.text}</div>
-          `;
-// Scroll to the bottom to see new messages
-scrollChatToBottom();
-messageDiv.addEventListener('contextmenu', (event) => {
-  handleContextMenu(event, snapshot.key, message.username, messagesRef);
+// Initialize long-press event for each message to show the delete option
+const allMessages = document.querySelectorAll('.message');
+allMessages.forEach((messageDiv) => {
+  const messageKey = messageDiv.getAttribute('data-message-key');
+  const messageUsername = messageDiv.getAttribute('data-message-username');
+  initMessageLongPress(messageDiv, messageKey, messageUsername, messagesRef);
 });
-          // Append message content to the messageDiv
-          messageDiv.appendChild(messageContentDiv);
-    
-          // Add long-press event listener to each message
-          messageDiv.addEventListener('contextmenu', (event) => {
-            handleContextMenu(event, message.key, message.username, messagesRef);
-          });
-    
-          chatHTML += messageDiv.outerHTML;
-        });
-    
-        // Update the chat with the generated HTML
-        messagesDiv.innerHTML = chatHTML;
-        scrollChatToBottom();
-        // Scroll to the bottom to see new messages
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+function refreshChat() {
+  // Clear existing messages
+  messagesDiv.innerHTML = '';
+
+  // Fetch all messages again and populate the chat
+  messagesRef.once('value', (snapshot) => {
+    const messages = [];
+
+    snapshot.forEach((childSnapshot) => {
+      const message = childSnapshot.val();
+      messages.push({
+        key: childSnapshot.key,
+        username: message.username,
+        timestamp: message.timestamp,
+        text: message.text,
+        formattedTimestamp: formatTimestamp(message.timestamp)
       });
-    }
-  
+    });
+
+    // Sort the messages based on their timestamps in ascending order (oldest to newest)
+    messages.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Generate message HTML
+    let chatHTML = '';
+    messages.forEach((message) => {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.classList.add(message.username === username ? 'sent' : 'received');
+
+      // Set a data attribute to identify the message div with its key
+      messageDiv.setAttribute('data-message-key', message.key);
+      messageDiv.setAttribute('data-message-username', message.username);
+
+      // Create the message content
+      const messageContentDiv = document.createElement('div');
+      messageContentDiv.classList.add('messageContent');
+      messageContentDiv.innerHTML = `
+        <div class="messageHeader">
+          <span class="username">${message.username}</span>
+          <span class="timestamp">${message.formattedTimestamp}</span>
+        </div>
+        <div class="text">${message.text}</div>
+      `;
+      // Append message content to the messageDiv
+      messageDiv.appendChild(messageContentDiv);
+
+      chatHTML += messageDiv.outerHTML;
+    });
+
+    // Update the chat with the generated HTML
+    messagesDiv.innerHTML = chatHTML;
+    scrollChatToBottom();
+    // Scroll to the bottom to see new messages
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // Initialize long-press event for each message to show the delete option
     const allMessages = document.querySelectorAll('.message');
     allMessages.forEach((messageDiv) => {
       const messageKey = messageDiv.getAttribute('data-message-key');
       const messageUsername = messageDiv.getAttribute('data-message-username');
       initMessageLongPress(messageDiv, messageKey, messageUsername, messagesRef);
     });
+  });
+}
+
+ 
   // Listen for child_removed event to detect when a message is deleted
   messagesRef.on('child_removed', (snapshot) => {
     // Get the key of the deleted message
@@ -291,4 +299,39 @@ messageDiv.addEventListener('contextmenu', (event) => {
 
   // Listen for input event on the message input to update the send button state
   messageInput.addEventListener('input', updateSendButtonState);
+}
+
+// Updated logout function with confirmation
+function logout() {
+  Swal.fire({
+    title: 'Logout',
+    text: 'Are you sure you want to log out?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, Log out',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      firebase.auth().signOut()
+        .then(() => {
+          console.log("User logged out");
+          Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: "User logged out successfully!"
+          });
+          window.location.href = "login.html"; // Redirect the user to the login page after logout
+        })
+        .catch((error) => {
+          console.error("Logout error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Logout Error",
+            text: "An error occurred while logging out."
+          });
+        });
+    }
+  });
 }
