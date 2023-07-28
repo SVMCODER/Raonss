@@ -123,7 +123,7 @@ function handleContextMenu(event, messageKey, messageUsername, messagesRef) {
       // Scroll to the bottom
       window.scrollTo({
         top: scrollPosition,
-        behavior: 'smooth' // This makes the scroll smooth, set it to 'auto' for instant scroll
+        behavior: 'auto' // This makes the scroll instant
       });
     }
 
