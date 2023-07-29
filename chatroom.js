@@ -359,24 +359,4 @@ function logout() {
     }
   });
 }
-  // Attach an event listener to the 'beforeunload' event
-  window.addEventListener('beforeunload', function (e) {
-    // Show a confirmation dialog using SweetAlert
-    e.preventDefault();
-
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You are about to leave this page!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, leave!',
-      cancelButtonText: 'No, stay!'
-    }).then((result) => {
-      // If the user confirms, allow the page to be unloaded
-      if (result.isConfirmed) {
-        e.returnValue = '';
-      }
-    });
-  });
+  
