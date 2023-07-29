@@ -146,11 +146,10 @@ window.addEventListener('load', () => {
                 document.execCommand('copy');
                 document.body.removeChild(input);
               }
+              // window.location.reload()
             });
-
-            // Add the created room to the list with group code
-            addRoomToList(groupCode, groupName);
           })
+          
           .catch((error) => {
             console.error('Error creating chatroom:', error);
             Swal.fire('Error', 'Failed to create group', 'error');
@@ -163,11 +162,11 @@ window.addEventListener('load', () => {
   function addRoomToList(groupCode, groupName) {
     const listItem = document.createElement('li');
     const link = document.createElement('a');
-    link.href = `${window.location.href}/chatroom.html?roomId=${groupCode}`;
+    link.href = `chatroom.html?roomId=${groupCode}`;
     link.textContent = groupName;
 
     const groupCodeText = document.createElement('span');
-    groupCodeText.textContent = `‎  ( Code: ${groupCode} )`; // Show the group code in the list
+    groupCodeText.textContent = `‎  ( Code: ${groupCode} ) ‎ `; // Show the group code in the list
 
     const deleteButton = document.createElement('button');
     deleteButton.innerHTML = '<i class="bx bx-trash"></i>';
@@ -250,8 +249,7 @@ function joinRoomWithInviteCode() {
                     title: 'Success',
                     text: 'You have joined the group successfully!'
                   });
-                  // Refresh the room list after joining
-                  buildRoomList(userId);
+                  
                 })
                 .catch((error) => {
                   console.error('Error joining group:', error);
@@ -271,3 +269,24 @@ function joinRoomWithInviteCode() {
 
 // Attach event listeners
 createRoomBtn.addEventListener('click', createRoom);
+  // Attach an event listener to the 'beforeunload' event
+  window.addEventListener('beforeunload', function (e) {
+    // Show a confirmation dialog using SweetAlert
+    e.preventDefault();
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You are about to leave this page!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, leave!',
+      cancelButtonText: 'No, stay!'
+    }).then((result) => {
+      // If the user confirms, allow the page to be unloaded
+      if (result.isConfirmed) {
+        e.returnValue = '';
+      }
+    });
+  });

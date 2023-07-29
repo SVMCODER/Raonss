@@ -141,7 +141,7 @@ function sendLikeMessage(blogId, blogData) {
 
   // Check if the current user is not the author of the blog post
   if (currentUserUid !== authorUid) {
-    var likeMessage = `${user.displayName} liked your post.`;
+    var likeMessage = `❤ @${user.displayName} Liked Your Post`;
 
     // Create a new message reference in the database
     var messagesRef = database.ref('messages');
@@ -196,7 +196,7 @@ function handleLike(blogId, blogDataString) {
 }
 
 
-function displayBlogs() {
+function displayBlogs(displayName) {
   var blogContainer = document.getElementById('blogContainer');
 
   blogsRef.orderByChild('timestamp').on('value', function (snapshot) {
@@ -222,36 +222,32 @@ function displayBlogs() {
         blogElement.classList.add('blog', 'container');
 
         var blogHeader = document.createElement('div');
-        blogHeader.classList.add('blog-header');
+        blogHeader.classList.add('blog-header', 'd-flex', 'align-items-center', 'flex-wrap'); // Use flex-wrap to wrap elements in multiple lines
 
         var authorIconContainer = document.createElement('div');
-        authorIconContainer.classList.add('author-icon');
+        authorIconContainer.classList.add('author-icon', 'mr-2');
         var authorIcon = document.createElement('img');
-        var authorNameLink = document.createElement('a');
-        authorNameLink.href = '/profile.html?uid=' + authorId;
-        authorNameLink.textContent = blogData.authorName;
-        authorIcon.src = blogData.authorProfilePic || 'https://cdn-icons-png.flaticon.com/512/7153/7153150.png';
+        authorIcon.src = blogData.photoURL || 'https://cdn-icons-png.flaticon.com/512/7153/7153150.png';
         authorIcon.alt = 'Author Icon';
         authorIconContainer.appendChild(authorIcon);
-        authorIconContainer.addEventListener('click', function () {
-          window.location.href = '/profile.html?uid=' + authorId;
-        });
-        authorNameLink.addEventListener('click', function (event) {
-          event.stopPropagation();
-          window.location.href = '/profile.html?uid=' + authorId;
-        });
-        
-        // Display the author's name in the blog header
-        var authorNameHeader = document.createElement('h3');
-        authorNameHeader.textContent = "Author: " + blogData.authorName;
-        blogHeader.appendChild(authorNameHeader);
 
         blogHeader.appendChild(authorIconContainer);
+
+        // Display the author's name as a regular paragraph
+        var authorName = document.createElement('p');
+        authorName.textContent = blogData.authorName || displayName; // Use displayName if authorName is undefined
+        blogHeader.appendChild(authorName);
+
+        // Display timestamp below the author name
+        var timestamp = document.createElement('p');
+        timestamp.classList.add('timestamp');
+        timestamp.textContent = formatDate(blogData.timestamp);
+        blogHeader.appendChild(timestamp);
 
         // Add the delete option (trash icon) for the author
         if (isCurrentUserAuthor(blogData)) {
           var deleteIcon = document.createElement('i');
-          deleteIcon.classList.add('fas', 'fa-trash', 'delete-icon');
+          deleteIcon.classList.add('fas', 'fa-trash', 'delete-icon', 'ml-auto');
           deleteIcon.addEventListener('click', function (event) {
             event.stopPropagation();
             deletePost(blogId);
@@ -259,11 +255,6 @@ function displayBlogs() {
           blogHeader.appendChild(deleteIcon);
         }
 
-        var timestamp = document.createElement('p');
-        timestamp.classList.add('timestamp');
-        timestamp.textContent = formatDate(blogData.timestamp);
-
-        authorNameHeader.appendChild(timestamp);
         blogElement.appendChild(blogHeader);
 
         var blogContent = document.createElement('div');
@@ -345,8 +336,6 @@ function displayBlogs() {
 }
 
 
-
-
 // Function to calculate "time ago" from a given date
 function formatDate(date) {
   var seconds = Math.floor((new Date() - date) / 1000);
@@ -410,3 +399,24 @@ function logout() {
     }
   });
 }
+  // Attach an event listener to the 'beforeunload' event
+  window.addEventListener('beforeunload', function (e) {
+    // Show a confirmation dialog using SweetAlert
+    e.preventDefault();
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You are about to leave this page!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, leave!',
+      cancelButtonText: 'No, stay!'
+    }).then((result) => {
+      // If the user confirms, allow the page to be unloaded
+      if (result.isConfirmed) {
+        e.returnValue = '';
+      }
+    });
+  });

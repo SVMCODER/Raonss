@@ -1,5 +1,11 @@
 /* styles.css */
+/* Disable the default focus outline on anchor elements */
+/* Disable the default active styles on anchor elements */
+*{
+  -moz-outline-style: none; /* For Firefox */
+  -webkit-tap-highlight-color: transparent; /* For WebKit/Blink-based browsers */
 
+}
 body {
     font-family: Arial, sans-serif;
     text-align: left;

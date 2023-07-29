@@ -1,3 +1,10 @@
+
+
+*{
+  -moz-outline-style: none; /* For Firefox */
+  -webkit-tap-highlight-color: transparent; /* For WebKit/Blink-based browsers */
+
+}
 html,body {
   outline-color: #050505;
   height: 94%;
@@ -5,8 +12,8 @@ html,body {
   user-select: none;
   }
   a{
-  text-decoration: underline;
-  color: #00f7ff;
+  text-decoration: none;
+  color: #ffffff;
   }
 body {
   outline-color: #161616;
@@ -36,9 +43,8 @@ body {
   padding: 20px 20px;
   margin: 0 10px;
   font-size: 1em;
-  transition: background 0.4 linear;
+  box-shadow: none;
 }
-
 .tab i{
   font-size: 1em;
 }
@@ -386,7 +392,9 @@ textarea {
   margin-right: 5px;
   cursor: pointer;
 }
-
+.tab:focus {
+  outline: none !important;
+}
 .interaction-container {
   display: flex;
   justify-content: space-between;

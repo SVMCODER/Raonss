@@ -7,7 +7,9 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
   }
-  
+  *:focus {
+    outline: none !important;
+  }
   .container {
     background-color: #fff;
     border: 1px solid #dbdbdb;
@@ -33,7 +35,11 @@ body {
     border-radius: 4px;
     font-size: 14px;
   }
+  *{
+    -moz-outline-style: none; /* For Firefox */
+    -webkit-tap-highlight-color: transparent; /* For WebKit/Blink-based browsers */
   
+  }
   .login-form button {
     width: 100%;
     padding: 8px;

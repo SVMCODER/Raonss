@@ -95,7 +95,7 @@ function saveBlogToDatabase(uid, displayName, photoURL, title, content, imageURL
   // Create a data object to be saved in the Realtime Database
   var blogData = {
     uid: uid,
-    displayName: displayName,
+    authorName: displayName, // Set the authorName in the blog data
     photoURL: photoURL,
     title: title,
     content: content,
@@ -103,8 +103,7 @@ function saveBlogToDatabase(uid, displayName, photoURL, title, content, imageURL
     timestamp: firebase.database.ServerValue.TIMESTAMP,
     likes: 0, // Initial value for likes
     views: 0 // Initial value for views
-};
-
+  };
   // Save the blog data to the Realtime Database
   newBlogRef.set(blogData)
       .then(function() {
@@ -184,5 +183,24 @@ function logout() {
       }
     });
   }
-  
-  
+   // Attach an event listener to the 'beforeunload' event
+   window.addEventListener('beforeunload', function (e) {
+    // Show a confirmation dialog using SweetAlert
+    e.preventDefault();
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You are about to leave this page!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, leave!',
+      cancelButtonText: 'No, stay!'
+    }).then((result) => {
+      // If the user confirms, allow the page to be unloaded
+      if (result.isConfirmed) {
+        e.returnValue = '';
+      }
+    });
+  });
